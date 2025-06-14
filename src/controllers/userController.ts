@@ -7,7 +7,7 @@ import { sendResponse } from "../core/response/apiResponse";
 const prisma = new PrismaClient(); //veritabanı baglantısı
 
 export const createUser = async (req:Request,res:Response) => {
-    const {name,id,email,password,role} = req.body;
+    const {name,id,email,password,role,phone} = req.body;
     try {
         const newUser = await prisma.user.create({
             data: {
@@ -16,6 +16,7 @@ export const createUser = async (req:Request,res:Response) => {
                 email,
                 password,
                 role,
+                phone,
             },
         });
         sendResponse(res,HttpStatusCode.OK,{

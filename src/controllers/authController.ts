@@ -18,7 +18,7 @@ export const register = async (req: Request, res: Response) => {
       error: result.error.errors[0].message,
     });
   }
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role,phone} = req.body;
 
   try {
     
@@ -33,7 +33,7 @@ export const register = async (req: Request, res: Response) => {
 
     const hashedPassword = await bcrypt.hash(password, 8);
     const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, role },
+      data: { name, email, password: hashedPassword, role ,phone},
     });
 
      sendResponse(res, HttpStatusCode.CREATED, {
@@ -65,13 +65,13 @@ export const login = async (req: Request, res: Response) => {
   const { email, password } = result.data;
 
   try {
-    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-        sendResponse(res, HttpStatusCode.UNAUTHORIZED, {
+         sendResponse(res, HttpStatusCode.UNAUTHORIZED, {
         success: false,
         message: "Geçersiz email veya şifre.",
       });
-      
+      return
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

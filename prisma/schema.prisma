@@ -12,11 +12,89 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String
+  phone     String?
+  reviews              Review[]     
 
-model User{
-  id String @id @default(uuid())
-  name String
-  email    String  @unique
-  password String
-  role String
+  // İlişkiler
+  haliSahalari         HaliSaha[]       @relation("HaliSaha_ownerId")    // Sahip olduğu sahalar
+  reservations         Reservation[]    @relation("Reservation_userId")  // Yaptığı rezervasyonlar
+  updatedReservations  Reservation[]    @relation("UpdatedBy")           // Güncellediği rezervasyonlar                                      // Yaptığı yorumlar
 }
+
+model HaliSaha {
+  id                String    @id @default(uuid())
+  name              String
+  location          String
+  latitude          Float
+  longitude         Float
+  phone             String
+  description       String
+
+  pricePerHour      Float
+  rating            Float     @default(0)
+  reviewCount       Int       @default(0)
+
+  startHour         String
+  endHour           String
+
+  size              String
+  surface           String
+  maxPlayers        Int
+
+  hasParking        Boolean   @default(false)
+  hasShowers        Boolean   @default(false)
+  hasShoeRental     Boolean   @default(false)
+  hasCafeteria      Boolean   @default(false)
+  hasNightLighting  Boolean   @default(false)
+
+  imagesUrl         String[]
+  bookedSlots       String[]
+
+  ownerId           String
+  owner             User      @relation("HaliSaha_ownerId", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  reservations      Reservation[]
+  reviews           Review[]  // Gelen yorumlar
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Reservation {
+  id                  String    @id @default(uuid())
+  userId              String
+  haliSahaId          String
+
+  status              String    @default("pending") // pending, approved, cancelled
+  reservationDateTime DateTime
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  lastUpdatedById     String?
+  isRecurring         Boolean   @default(false)
+  subscriptionId      String?
+
+  user                User      @relation("Reservation_userId", fields: [userId], references: [id])
+  haliSaha            HaliSaha  @relation(fields: [haliSahaId], references: [id])
+  lastUpdatedBy       User?     @relation("UpdatedBy", fields: [lastUpdatedById], references: [id])
+}
+
+model Review {
+  id          String    @id @default(uuid())
+  userId      String
+  haliSahaId  String
+  rating      Int       @default(5) // 1 ile 5 arası
+  comment     String
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+  haliSaha    HaliSaha  @relation(fields: [haliSahaId], references: [id])
+}
+
