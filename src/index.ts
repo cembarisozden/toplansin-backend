@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import routeUser from './routes/users';
 import routeAuth from './routes/auth';
 import routeHaliSaha from './routes/haliSaha';
+import routeReservation from './routes/reservation';
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -20,6 +21,7 @@ console.log("✅ Morgan aktif"); // Bunu terminalde görüyor musun?
 app.use('/api',routeUser)
 app.use('/api',routeAuth)
 app.use('/api',routeHaliSaha)
+app.use('/api',routeReservation)
 
 
 

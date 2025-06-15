@@ -1,12 +1,23 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import { sendResponse } from "../core/response/apiResponse";
 import { HttpStatusCode } from "../core/enums/httpStatusCode";
+import {createHaliSahaSchema,updateHaliSahaSchema} from "../validators/zodSchemas";
+import { prisma } from "../lib/prisma";
+import { cacheOrFetch } from "../utils/cache";
 
-const prisma = new PrismaClient();
 
 export const createHaliSaha = async (req: Request, res: Response) => {
-  const { name, location, phone, description, pricePerHour, startHour, endHour, size, surface, maxPlayers, ownerId,latitude,longitude } = req.body;
+
+  const result=createHaliSahaSchema.safeParse(req.body);
+   if (!result.success) {
+      sendResponse(res, HttpStatusCode.BAD_REQUEST, {
+      success: false,
+      message: "Geçersiz giriş verisi.",
+      error: result.error.errors[0].message,
+    });
+  }
+
+  const { name, location, phone, description, pricePerHour, startHour, endHour, size, surface, maxPlayers, ownerId,latitude,longitude,hasCafeteria,hasNightLighting,hasParking,hasShoeRental,hasShowers } = req.body;
 
   try {
     const haliSaha = await prisma.haliSaha.create({
@@ -23,7 +34,12 @@ export const createHaliSaha = async (req: Request, res: Response) => {
         maxPlayers,
         ownerId,
         latitude,
-        longitude
+        longitude,
+        hasCafeteria,
+        hasNightLighting,
+        hasParking,
+        hasShoeRental,
+        hasShowers,
       },
     });
 
@@ -42,15 +58,10 @@ export const createHaliSaha = async (req: Request, res: Response) => {
 
 export const getAllHaliSahalar = async (req: Request, res: Response) => {
   try {
-    const sahalar = await prisma.haliSaha.findMany();
-    sendResponse(res, HttpStatusCode.OK, {
-      data: sahalar,
-    });
-  } catch (error) {
-    sendResponse(res, HttpStatusCode.INTERNAL_SERVER_ERROR, {
-      success: false,
-      message: "Sahalara erişilemedi.",
-    });
+    const sahalar = await cacheOrFetch("haliSahalar:all", 60, () => prisma.haliSaha.findMany());
+    sendResponse(res, HttpStatusCode.OK, { message: "Başarılı", data: sahalar });
+  } catch (err) {
+    sendResponse(res, HttpStatusCode.INTERNAL_SERVER_ERROR, { success: false, message: "Hata oluştu" });
   }
 };
 
@@ -80,6 +91,16 @@ export const getHaliSahaById = async (req: Request, res: Response) => {
 };
 
 export const updateHaliSaha = async (req: Request, res: Response) => {
+
+  const result=updateHaliSahaSchema.safeParse(req.body);
+   if (!result.success) {
+      sendResponse(res, HttpStatusCode.BAD_REQUEST, {
+      success: false,
+      message: "Geçersiz giriş verisi.",
+      error: result.error.errors[0].message,
+    });
+  }
+
   const { id } = req.params;
   const updates = req.body;
 

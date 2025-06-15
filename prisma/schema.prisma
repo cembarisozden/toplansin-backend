@@ -12,12 +12,19 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role{
+  USER
+  OWNER
+  ADMIN
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String
   email     String   @unique
   password  String
-  role      String
+  role      Role  @default(USER)
   phone     String?
   reviews              Review[]     
 
@@ -90,7 +97,7 @@ model Review {
   id          String    @id @default(uuid())
   userId      String
   haliSahaId  String
-  rating      Int       @default(5) // 1 ile 5 arası
+  rating      Int       
   comment     String
   createdAt   DateTime  @default(now())
 

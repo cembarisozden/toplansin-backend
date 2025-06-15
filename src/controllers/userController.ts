@@ -1,10 +1,8 @@
 import { Request,Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import {HttpStatusCode} from '../core/enums/httpStatusCode';
 import { sendResponse } from "../core/response/apiResponse";
+import { prisma } from "../lib/prisma";
 
-
-const prisma = new PrismaClient(); //veritabanı baglantısı
 
 export const createUser = async (req:Request,res:Response) => {
     const {name,id,email,password,role,phone} = req.body;
