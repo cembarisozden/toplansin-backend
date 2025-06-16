@@ -81,11 +81,18 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
 
-    const token = signToken({ id: user?.id, role: user.role }); // roller varsa
-     sendResponse(res, HttpStatusCode.OK, {
-      message: "Giriş başarılı.",
-      data: { token },
-    });
+const token = signToken({ id: user?.id, role: user.role }); // roller varsa
+
+// Şifreyi response'dan çıkar
+const { password: _, ...userWithoutPassword } = user;
+
+sendResponse(res, HttpStatusCode.OK, {
+  message: "Giriş başarılı.",
+  data: { 
+    user: userWithoutPassword,
+    token 
+  },
+});
   } catch (err) {
     console.error("Login error:", err);
      sendResponse(res, HttpStatusCode.INTERNAL_SERVER_ERROR, {

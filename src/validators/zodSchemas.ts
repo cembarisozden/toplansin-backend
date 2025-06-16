@@ -52,6 +52,10 @@ export const updateHaliSahaSchema = z.object({
 
   pricePerHour: z.number().positive().optional(),
 
+  // Yeni eklenen alanlar
+  averageRating: z.number().optional(),
+  reviewCount: z.number().int().optional(),
+
   startHour: z.string().min(1).optional(),
   endHour: z.string().min(1).optional(),
 
