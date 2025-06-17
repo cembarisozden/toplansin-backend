@@ -61,7 +61,7 @@ model HaliSaha {
   hasNightLighting  Boolean   @default(false)
 
   imagesUrl         String[]
-  bookedSlots       String[]
+  bookedSlots       DateTime[]
 
   ownerId           String
   owner             User      @relation("HaliSaha_ownerId", fields: [ownerId], references: [id], onDelete: Cascade)

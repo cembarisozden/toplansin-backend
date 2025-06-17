@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { HttpStatusCode } from "../core/enums/httpStatusCode";
 import { sendResponse } from "../core/response/apiResponse";
 import { createReviewSchema, updateReviewSchema } from "../validators/zodSchemas";
+import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 
 /**
  * Bir halı sahanın ortalama puanını ve toplam yorum sayısını hesaplayıp
@@ -83,11 +84,13 @@ export const getAllReviews = async (req: Request, res: Response) => {
       },
     });
     sendResponse(res, HttpStatusCode.OK, { data: reviews });
+    return;
   } catch (error) {
     sendResponse(res, HttpStatusCode.INTERNAL_SERVER_ERROR, {
       success: false,
       message: "Yorumlara erişilemedi.",
     });
+    return;
   }
 };
 
@@ -113,10 +116,12 @@ export const getReviewById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateReview = async (req: Request, res: Response) => {
+export const updateReview = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
-  const result = updateReviewSchema.safeParse(req.body);
+  const loggedInUserId = req.user?.id;
+  const userRole = req.user?.role;
 
+  const result = updateReviewSchema.safeParse(req.body);
   if (!result.success) {
     sendResponse(res, HttpStatusCode.BAD_REQUEST, {
       success: false,
@@ -129,12 +134,28 @@ export const updateReview = async (req: Request, res: Response) => {
   const data = result.data;
 
   try {
+    const existingReview = await prisma.review.findUnique({ where: { id } });
+
+    if (!existingReview) {
+       sendResponse(res, HttpStatusCode.NOT_FOUND, {
+        success: false,
+        message: "Yorum bulunamadı.",
+      });
+      return;
+    }
+
+    if (existingReview.userId !== loggedInUserId && userRole !== "ADMIN") {
+       sendResponse(res, HttpStatusCode.FORBIDDEN, {
+        success: false,
+        message: "Bu yorumu güncellemeye yetkiniz yok.",
+      });
+    }
+
     const updated = await prisma.review.update({
       where: { id },
       data,
     });
 
-    // Yorum güncellendikten sonra ilgili halı sahanın istatistiklerini güncelle
     await updateHaliSahaStats(updated.haliSahaId);
 
     sendResponse(res, HttpStatusCode.OK, {
@@ -149,12 +170,15 @@ export const updateReview = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteReview = async (req: Request, res: Response) => {
+
+export const deleteReview = async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
+  const loggedInUserId = req.user?.id;
+  const userRole = req.user?.role;
 
   try {
-    // Silmeden önce, hangi halı sahaya ait olduğunu öğrenmemiz gerekiyor
     const review = await prisma.review.findUnique({ where: { id } });
+
     if (!review) {
       sendResponse(res, HttpStatusCode.NOT_FOUND, {
         success: false,
@@ -162,11 +186,16 @@ export const deleteReview = async (req: Request, res: Response) => {
       });
       return;
     }
-    
-    // Yorumu veritabanından sil
-    await prisma.review.delete({ where: { id } });
 
-    // Yorum silindikten sonra ilgili halı sahanın istatistiklerini güncelle
+    if (review.userId !== loggedInUserId && userRole !== "ADMIN") {
+       sendResponse(res, HttpStatusCode.FORBIDDEN, {
+        success: false,
+        message: "Bu yorumu silmeye yetkiniz yok.",
+      });
+      return;
+    }
+
+    await prisma.review.delete({ where: { id } });
     await updateHaliSahaStats(review.haliSahaId);
 
     sendResponse(res, HttpStatusCode.OK, { message: "Yorum silindi." });
