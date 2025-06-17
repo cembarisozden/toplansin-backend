@@ -19,7 +19,7 @@ export const createHaliSahaSchema = z.object({
   latitude: z.number().refine(val => val >= -90 && val <= 90, "Geçerli bir enlem girin"),
   longitude: z.number().refine(val => val >= -180 && val <= 180, "Geçerli bir boylam girin"),
   phone: z.string().min(10, "Telefon numarası en az 10 karakter olmalı"),
-  description: z.string().optional(),
+  description: z.string().min(1,"Açıklama boş olamaz"),
 
   pricePerHour: z.number().positive("Pozitif bir saatlik ücret girin"),
 
