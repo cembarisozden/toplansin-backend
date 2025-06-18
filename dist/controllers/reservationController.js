@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -18,9 +9,8 @@ const apiResponse_1 = require("../core/response/apiResponse");
 const zodSchemas_1 = require("../validators/zodSchemas");
 const prisma_1 = require("../lib/prisma");
 const logger_1 = __importDefault(require("../core/logger/logger")); // ← ekledik
-const createReservation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    logger_1.default.info("createReservation çağrıldı by user %s", (_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
+const createReservation = async (req, res) => {
+    logger_1.default.info("createReservation çağrıldı by user %s", req.user?.id);
     const result = zodSchemas_1.createReservationSchema.safeParse(req.body);
     if (!result.success) {
         logger_1.default.warn("createReservation: Geçersiz veri – %s", result.error.errors[0].message);
@@ -33,9 +23,9 @@ const createReservation = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     const data = result.data;
     try {
-        const reservation = yield prisma_1.prisma.reservation.create({ data });
+        const reservation = await prisma_1.prisma.reservation.create({ data });
         // Her durumda ekle
-        yield updateBookedSlots(reservation.haliSahaId, reservation.reservationDateTime, "add");
+        await updateBookedSlots(reservation.haliSahaId, reservation.reservationDateTime, "add");
         logger_1.default.info("createReservation başarılı – id: %s", reservation.id);
         (0, apiResponse_1.sendResponse)(res, httpStatusCode_1.HttpStatusCode.CREATED, {
             message: "Rezervasyon başarıyla oluşturuldu.",
@@ -51,31 +41,30 @@ const createReservation = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         return;
     }
-});
+};
 exports.createReservation = createReservation;
-const getAllReservations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
-    logger_1.default.info("getAllReservations çağrıldı by user %s (role: %s)", (_a = req.user) === null || _a === void 0 ? void 0 : _a.id, (_b = req.user) === null || _b === void 0 ? void 0 : _b.role);
-    const userId = (_c = req.user) === null || _c === void 0 ? void 0 : _c.id;
-    const role = (_d = req.user) === null || _d === void 0 ? void 0 : _d.role;
+const getAllReservations = async (req, res) => {
+    logger_1.default.info("getAllReservations çağrıldı by user %s (role: %s)", req.user?.id, req.user?.role);
+    const userId = req.user?.id;
+    const role = req.user?.role;
     try {
         let reservations;
         if (role === "USER") {
-            reservations = yield prisma_1.prisma.reservation.findMany({
+            reservations = await prisma_1.prisma.reservation.findMany({
                 where: { userId },
                 include: { haliSaha: true },
                 orderBy: { createdAt: "desc" },
             });
         }
         else if (role === "OWNER") {
-            reservations = yield prisma_1.prisma.reservation.findMany({
+            reservations = await prisma_1.prisma.reservation.findMany({
                 where: { haliSaha: { ownerId: userId } },
                 include: { haliSaha: true },
                 orderBy: { createdAt: "desc" },
             });
         }
         else if (role === "ADMIN") {
-            reservations = yield prisma_1.prisma.reservation.findMany({
+            reservations = await prisma_1.prisma.reservation.findMany({
                 include: { haliSaha: true },
                 orderBy: { createdAt: "desc" },
             });
@@ -100,16 +89,15 @@ const getAllReservations = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
         return;
     }
-});
+};
 exports.getAllReservations = getAllReservations;
-const getReservationById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+const getReservationById = async (req, res) => {
     const { id } = req.params;
-    logger_1.default.info("getReservationById çağrıldı – id: %s by user %s", id, (_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
-    const userRole = (_c = req.user) === null || _c === void 0 ? void 0 : _c.role;
+    logger_1.default.info("getReservationById çağrıldı – id: %s by user %s", id, req.user?.id);
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
     try {
-        const reservation = yield prisma_1.prisma.reservation.findUnique({
+        const reservation = await prisma_1.prisma.reservation.findUnique({
             where: { id },
             include: { haliSaha: { select: { ownerId: true } } },
         });
@@ -143,14 +131,13 @@ const getReservationById = (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
         return;
     }
-});
+};
 exports.getReservationById = getReservationById;
-const updateReservation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+const updateReservation = async (req, res) => {
     const { id } = req.params;
-    logger_1.default.info("updateReservation çağrıldı – id: %s by user %s", id, (_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
-    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.id;
-    const userRole = (_c = req.user) === null || _c === void 0 ? void 0 : _c.role;
+    logger_1.default.info("updateReservation çağrıldı – id: %s by user %s", id, req.user?.id);
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
     const result = zodSchemas_1.updateReservationSchema.safeParse(req.body);
     if (!result.success) {
         logger_1.default.warn("updateReservation: Geçersiz veri – %s", result.error.errors[0].message);
@@ -163,7 +150,7 @@ const updateReservation = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
     const updates = result.data;
     try {
-        const existing = yield prisma_1.prisma.reservation.findUnique({
+        const existing = await prisma_1.prisma.reservation.findUnique({
             where: { id },
             include: { haliSaha: { select: { ownerId: true } } },
         });
@@ -185,12 +172,12 @@ const updateReservation = (req, res) => __awaiter(void 0, void 0, void 0, functi
             });
             return;
         }
-        const updated = yield prisma_1.prisma.reservation.update({
+        const updated = await prisma_1.prisma.reservation.update({
             where: { id },
             data: updates,
         });
         if (updated.status === "cancelled") {
-            yield updateBookedSlots(updated.haliSahaId, updated.reservationDateTime, "remove");
+            await updateBookedSlots(updated.haliSahaId, updated.reservationDateTime, "remove");
         }
         logger_1.default.info("updateReservation başarılı – id: %s", id);
         (0, apiResponse_1.sendResponse)(res, httpStatusCode_1.HttpStatusCode.OK, {
@@ -207,14 +194,13 @@ const updateReservation = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         return;
     }
-});
+};
 exports.updateReservation = updateReservation;
-const deleteReservation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const deleteReservation = async (req, res) => {
     const { id } = req.params;
-    logger_1.default.info("deleteReservation çağrıldı – id: %s by user %s", id, (_a = req.user) === null || _a === void 0 ? void 0 : _a.id);
+    logger_1.default.info("deleteReservation çağrıldı – id: %s by user %s", id, req.user?.id);
     try {
-        yield prisma_1.prisma.reservation.delete({ where: { id } });
+        await prisma_1.prisma.reservation.delete({ where: { id } });
         logger_1.default.info("deleteReservation başarılı – id: %s", id);
         (0, apiResponse_1.sendResponse)(res, httpStatusCode_1.HttpStatusCode.OK, { message: "Rezervasyon silindi." });
         return;
@@ -227,29 +213,28 @@ const deleteReservation = (req, res) => __awaiter(void 0, void 0, void 0, functi
         });
         return;
     }
-});
+};
 exports.deleteReservation = deleteReservation;
-function updateBookedSlots(haliSahaId, slotTime, action) {
-    return __awaiter(this, void 0, void 0, function* () {
-        logger_1.default.info("updateBookedSlots çağrıldı – action: %s, slot: %s, haliSahaId: %s", action, slotTime.toISOString(), haliSahaId);
-        const haliSaha = yield prisma_1.prisma.haliSaha.findUnique({
-            where: { id: haliSahaId },
-            select: { bookedSlots: true },
-        });
-        if (!haliSaha) {
-            logger_1.default.warn("updateBookedSlots: haliSaha bulunamadı – id: %s", haliSahaId);
-            return;
-        }
-        const updatedSlots = action === "add"
-            ? Array.from(new Set([
-                ...haliSaha.bookedSlots.map((d) => d.toISOString()),
-                slotTime.toISOString(),
-            ])).map((str) => new Date(str))
-            : haliSaha.bookedSlots.filter((slot) => slot.toISOString() !== slotTime.toISOString());
-        yield prisma_1.prisma.haliSaha.update({
-            where: { id: haliSahaId },
-            data: { bookedSlots: updatedSlots },
-        });
-        logger_1.default.info("updateBookedSlots başarılı – yeni bookedSlots count: %d", updatedSlots.length);
+async function updateBookedSlots(haliSahaId, slotTime, action) {
+    logger_1.default.info("updateBookedSlots çağrıldı – action: %s, slot: %s, haliSahaId: %s", action, slotTime.toISOString(), haliSahaId);
+    const haliSaha = await prisma_1.prisma.haliSaha.findUnique({
+        where: { id: haliSahaId },
+        select: { bookedSlots: true },
     });
+    if (!haliSaha) {
+        logger_1.default.warn("updateBookedSlots: haliSaha bulunamadı – id: %s", haliSahaId);
+        return;
+    }
+    const updatedSlots = action === "add"
+        ? Array.from(new Set([
+            ...haliSaha.bookedSlots.map((d) => d.toISOString()),
+            slotTime.toISOString(),
+        ])).map((str) => new Date(str))
+        : haliSaha.bookedSlots.filter((slot) => slot.toISOString() !== slotTime.toISOString());
+    await prisma_1.prisma.haliSaha.update({
+        where: { id: haliSahaId },
+        data: { bookedSlots: updatedSlots },
+    });
+    logger_1.default.info("updateBookedSlots başarılı – yeni bookedSlots count: %d", updatedSlots.length);
 }
+//# sourceMappingURL=reservationController.js.map

@@ -15,3 +15,4 @@ router.get("/reservation/:id", authMiddleware_1.authenticateToken, (0, authorize
 router.put("/reservation/update/:id", authMiddleware_1.authenticateToken, (0, authorizeRoles_1.authorizeRoles)("OWNER", "ADMIN", "USER"), rateLimiter_1.reservationLimiter, reservationController_1.updateReservation);
 router.delete("/reservation/delete/:id", authMiddleware_1.authenticateToken, (0, authorizeRoles_1.authorizeRoles)("ADMIN"), reservationController_1.deleteReservation);
 exports.default = router;
+//# sourceMappingURL=reservation.js.map

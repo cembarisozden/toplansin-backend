@@ -8,7 +8,7 @@ const winston_daily_rotate_file_1 = __importDefault(require("winston-daily-rotat
 const { combine, timestamp, printf, errors, json, colorize } = winston_1.format;
 // 1️⃣ Özel format (isteğe bağlı)
 const customFormat = printf(({ level, message, timestamp, stack }) => {
-    return `${timestamp} [${level}]: ${stack !== null && stack !== void 0 ? stack : message}`;
+    return `${timestamp} [${level}]: ${stack ?? message}`;
 });
 const logger = (0, winston_1.createLogger)({
     level: process.env.LOG_LEVEL || 'info',
@@ -45,3 +45,4 @@ if (process.env.NODE_ENV !== 'production') {
     }));
 }
 exports.default = logger;
+//# sourceMappingURL=logger.js.map

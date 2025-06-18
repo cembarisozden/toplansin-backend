@@ -14,3 +14,4 @@ router.get("/review/:id", reviewController_1.getReviewById);
 router.put("/review/update/:id", authMiddleware_1.authenticateToken, (0, authorizeRoles_1.authorizeRoles)("USER", "ADMIN"), reviewController_1.updateReview);
 router.delete("/review/delete/:id", authMiddleware_1.authenticateToken, (0, authorizeRoles_1.authorizeRoles)("USER", "ADMIN"), reviewController_1.deleteReview);
 exports.default = router;
+//# sourceMappingURL=review.js.map

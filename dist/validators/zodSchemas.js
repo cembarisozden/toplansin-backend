@@ -79,3 +79,4 @@ exports.createReviewSchema = zod_1.z.object({
     comment: zod_1.z.string().min(1, "Yorum boş olamaz."),
 });
 exports.updateReviewSchema = exports.createReviewSchema.partial();
+//# sourceMappingURL=zodSchemas.js.map

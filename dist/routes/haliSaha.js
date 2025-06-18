@@ -12,3 +12,4 @@ router.get("/halisaha/:id", haliSahaController_1.getHaliSahaById); // ID'ye gör
 router.put("/halisaha/update/:id", authMiddleware_1.authenticateToken, haliSahaController_1.updateHaliSaha); // Güncelle
 router.delete("/halisaha/delete/:id", authMiddleware_1.authenticateToken, haliSahaController_1.deleteHaliSaha); // Sil
 exports.default = router;
+//# sourceMappingURL=haliSaha.js.map

@@ -7,7 +7,7 @@ exports.authenticateToken = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
-    const token = authHeader === null || authHeader === void 0 ? void 0 : authHeader.split(" ")[1];
+    const token = authHeader?.split(" ")[1];
     if (!token) {
         res.status(401).json({ message: "Token bulunamadı." });
         return; // return ile çık ki "void" sağlansın
@@ -22,3 +22,4 @@ const authenticateToken = (req, res, next) => {
     }
 };
 exports.authenticateToken = authenticateToken;
+//# sourceMappingURL=authMiddleware.js.map

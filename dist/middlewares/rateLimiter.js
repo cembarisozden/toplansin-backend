@@ -40,8 +40,7 @@ exports.reservationLimiter = (0, express_rate_limit_1.default)({
     windowMs: 10 * 60 * 1000, // 10 dakika
     // role bazlı max ayarı:
     max: (req, _res) => {
-        var _a;
-        const role = (_a = req.user) === null || _a === void 0 ? void 0 : _a.role;
+        const role = req.user?.role;
         if (role === "ADMIN") {
             return 1000; // admin çok yüksek kota
         }
@@ -53,11 +52,11 @@ exports.reservationLimiter = (0, express_rate_limit_1.default)({
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {
-        var _a;
-        logger_1.default.warn("Rate limit aşıldı (reservation, role=%s): %s %s from %s", (_a = req.user) === null || _a === void 0 ? void 0 : _a.role, req.method, req.originalUrl, req.ip);
+        logger_1.default.warn("Rate limit aşıldı (reservation, role=%s): %s %s from %s", req.user?.role, req.method, req.originalUrl, req.ip);
         (0, apiResponse_1.sendResponse)(res, httpStatusCode_1.HttpStatusCode.TOO_MANY_REQUESTS, {
             success: false,
             message: "Çok fazla rezervasyon isteği yaptınız. Lütfen bir süre sonra tekrar deneyin."
         });
     }
 });
+//# sourceMappingURL=rateLimiter.js.map

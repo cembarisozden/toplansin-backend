@@ -1,12 +1,24 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "esModuleInterop": true,
+    /* ---------- Çıktı klasörleri ---------- */
+    "rootDir": "./src",          // Kaynaklar burada
+    "outDir": "./dist",          // Derlenmiş JS buraya
+
+    /* ---------- Target / Modül ---------- */
+    "target": "ES2020",          // Node 18+’da async-await gizli polyfill gerekmez
+    "module": "commonjs",        // Express + Prisma için uyumlu
+
+    /* ---------- Çalışmayı kolaylaştıranlar ---------- */
+    "strict": true,              // Tüm strict kurallar
+    "skipLibCheck": true,        // node_modules *.d.ts taraması atla → hızlı build
+    "esModuleInterop": true,     // default import - require uyumu
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true
-  }
+
+    /* ---------- Kaynak haritası & debug ---------- */
+    "sourceMap": true,           // dist/*.js.map üretir; prod’da dev-tool için faydalı
+    "inlineSources": true        // stack-trace’de TS satırını görürsün
+  },
+
+  /* ---------- ‘dist’ ve ‘node_modules’ derleme dışında kalsın ---------- */
+  "exclude": ["dist", "node_modules"]
 }

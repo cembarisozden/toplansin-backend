@@ -10,3 +10,4 @@ const router = express_1.default.Router();
 router.post("/register", rateLimiter_1.authLimiter, authController_1.register);
 router.post("/login", rateLimiter_1.authLimiter, authController_1.login);
 exports.default = router;
+//# sourceMappingURL=auth.js.map

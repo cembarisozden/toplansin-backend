@@ -14,3 +14,4 @@ var HttpStatusCode;
     HttpStatusCode[HttpStatusCode["INTERNAL_SERVER_ERROR"] = 500] = "INTERNAL_SERVER_ERROR";
     HttpStatusCode[HttpStatusCode["TOO_MANY_REQUESTS"] = 429] = "TOO_MANY_REQUESTS";
 })(HttpStatusCode || (exports.HttpStatusCode = HttpStatusCode = {}));
+//# sourceMappingURL=httpStatusCode.js.map
