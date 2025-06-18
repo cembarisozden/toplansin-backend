@@ -14,9 +14,16 @@ const reservation_1 = __importDefault(require("./routes/reservation"));
 const review_1 = __importDefault(require("./routes/review"));
 const logger_1 = __importDefault(require("./core/logger/logger"));
 const rateLimiter_1 = require("./middlewares/rateLimiter");
+console.log("🚀 Starting Toplansın backend...");
+// .env yükle
 dotenv_1.default.config();
-const app = (0, express_1.default)();
 const PORT = Number(process.env.PORT) || 5000;
+// kritik değişkenler kontrolü
+if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
+    console.error("❌ Missing .env variables: DATABASE_URL or JWT_SECRET");
+    process.exit(1); // railway deploy burada çakılır
+}
+const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(rateLimiter_1.globalLimiter);
 app.use((0, morgan_1.default)('combined', {
@@ -25,7 +32,7 @@ app.use((0, morgan_1.default)('combined', {
     }
 }));
 app.use(express_1.default.json());
-console.log("✅ Morgan aktif"); // Bunu terminalde görüyor musun?
+console.log("✅ Middleware'ler yüklendi");
 app.use('/api', users_1.default);
 app.use('/api', auth_1.default);
 app.use('/api', haliSaha_1.default);
@@ -35,5 +42,5 @@ app.get('/', (req, res) => {
     res.send('Toplansin backend runliyo');
 });
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server listening on http://0.0.0.0:${PORT}`);
+    console.log(`🎧 Server listening on http://0.0.0.0:${PORT}`);
 });
