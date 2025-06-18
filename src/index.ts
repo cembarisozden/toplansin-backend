@@ -10,18 +10,22 @@ import routeReview from './routes/review';
 import logger from './core/logger/logger';
 import { globalLimiter } from './middlewares/rateLimiter';
 
+console.log("🚀 Starting Toplansın backend...");
 
-
-
+// .env yükle
 dotenv.config();
-const app = express();
+
 const PORT = Number(process.env.PORT) || 5000;
 
+// kritik değişkenler kontrolü
+if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
+  console.error("❌ Missing .env variables: DATABASE_URL or JWT_SECRET");
+  process.exit(1); // railway deploy burada çakılır
+}
 
-app.use(cors({
-  origin: "*", // Geliştirme için geçici olarak tüm domainlere izin ver
-  credentials: true,
-}));
+const app = express();
+
+app.use(cors());
 
 app.use(globalLimiter);
 app.use(morgan('combined', {
@@ -30,20 +34,19 @@ app.use(morgan('combined', {
   }
 }));
 app.use(express.json());
-console.log("✅ Morgan aktif"); // Bunu terminalde görüyor musun?
-app.use('/api',routeUser)
-app.use('/api',routeAuth)
-app.use('/api',routeHaliSaha)
-app.use('/api',routeReservation)
-app.use('/api',routeReview)
 
+console.log("✅ Middleware'ler yüklendi");
 
-
-
+app.use('/api', routeUser);
+app.use('/api', routeAuth);
+app.use('/api', routeHaliSaha);
+app.use('/api', routeReservation);
+app.use('/api', routeReview);
 
 app.get('/', (req, res) => {
-    res.send('Toplansin backend runliyo');
+  res.send('Toplansin backend runliyo');
 });
+
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server listening on http://0.0.0.0:${PORT}`);
+  console.log(`🎧 Server listening on http://0.0.0.0:${PORT}`);
 });
