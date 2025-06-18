@@ -1,3 +1,16 @@
+process.on("uncaughtException",  err => {
+  console.error("💥 uncaughtException:", err);
+  process.exit(1);
+});
+process.on("unhandledRejection", err => {
+  console.error("💥 unhandledRejection:", err);
+  process.exit(1);
+});
+
+console.log("🟢 index.ts reached top");
+
+
+
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';

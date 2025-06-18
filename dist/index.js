@@ -3,6 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+process.on("uncaughtException", err => {
+    console.error("💥 uncaughtException:", err);
+    process.exit(1);
+});
+process.on("unhandledRejection", err => {
+    console.error("💥 unhandledRejection:", err);
+    process.exit(1);
+});
+console.log("🟢 index.ts reached top");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const morgan_1 = __importDefault(require("morgan"));
